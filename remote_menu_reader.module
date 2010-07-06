@@ -48,7 +48,7 @@ function remote_menu_reader_block($op = 'list', $delta = 0, $edit = array()) {
 		// the block view.
 		if ($block_content == '') {
 			// No content from remote server
-			$block['subject'] = 'On This Date';
+			$block['subject'] = 'Remote Menu';
 			$block['content'] = 'Sorry No Content';
 			return $block;
 		}
@@ -59,3 +59,35 @@ function remote_menu_reader_block($op = 'list', $delta = 0, $edit = array()) {
 		return $block;
 	}
 } // function remote_menu_reader_block
+
+function remote_menu_reader_admin() {
+	$form = array();
+
+	$form['remote_menu_reader_service_url'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Service URL'),
+		'#default_value' => variable_get('remote_menu_reader_service_url', 'http://localhost'),
+		'#size' => 60,
+		'#maxlength' => 255,
+		'#description' => t("The URL of the Service serving the menu."),
+		'#required' => TRUE,
+	);
+
+	return system_settings_form($form);
+}
+
+function remote_menu_reader_menu() {
+
+	$items = array();
+
+	$items['admin/settings/remote_menu_reader'] = array(
+		'title' => 'Remote Menu Reader module settings',
+		'description' => 'Configure the Remote Menu Reader options',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('remote_menu_reader_admin'),
+		'access arguments' => array('access administration pages'),
+		'type' => MENU_NORMAL_ITEM,
+	);
+
+	return $items;
+}
