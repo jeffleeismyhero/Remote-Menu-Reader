@@ -44,12 +44,14 @@ function remote_menu_reader_block($op = 'list', $delta = 0, $edit = array()) {
 		// Content variable that will be returned for display
 		$block_content = '';
 
+		$service_url = variable_get("remote_menu_reader_service_url", 'http://localhost');
+
 		// Check to see if there was any content before returning
 		// the block view.
 		if ($block_content == '') {
 			// No content from remote server
 			$block['subject'] = 'Remote Menu';
-			$block['content'] = 'Sorry No Content';
+			$block['content'] = "Sorry No Content from $service_url";
 			return $block;
 		}
 
