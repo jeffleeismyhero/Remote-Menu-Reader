@@ -1,0 +1,4 @@
+; $Id$
+name = Remote Menu Reader
+description = This module reads a menu from a remote site serving the menu through the Services module.
+core = 6.x

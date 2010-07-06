@@ -1,0 +1,61 @@
+<?php
+// $Id$
+
+/**
+* Display help and module information
+* @param path which path of the site we're displaying help
+* @param arg array that holds the current path as would be returned from arg() function
+* @return help text for the path
+*/
+function remote_menu_reader_help($path, $arg) {
+	$output = '';  // declare your output variable
+	switch ($path) {
+		case "admin/help#remote_menu_reader":
+			$output = '<p>'.  t("Retrieves a menu from a remote site serving the menu through the Services module") .'</p>';
+			break;
+	}
+	return $output;
+} // function remote_menu_reader_help
+
+/**
+* Valid permissions for this module
+* @return array An array of valid permissions for the remote_menu_reader module
+*/
+function remote_menu_reader_perm() {
+	  return array('access remote_menu_reader content', 'administer remote_menu_reader');
+} // function remote_menu_reader_perm()
+
+/**
+* Generate HTML for the remote_menu_reader block
+* @param op the operation from the URL
+* @param delta offset
+* @returns block HTML
+*/
+function remote_menu_reader_block($op = 'list', $delta = 0, $edit = array()) { 
+	if ($op == "list") {
+		// Generate listing of blocks from this module, for the admin/block page
+		$block = array();
+		$block[0]["info"] = t('Remote Menu Reader');
+		return $block;
+	}
+	else if ($op == "view") {
+		// Generate our block content
+
+		// Content variable that will be returned for display
+		$block_content = '';
+
+		// Check to see if there was any content before returning
+		// the block view.
+		if ($block_content == '') {
+			// No content from remote server
+			$block['subject'] = 'On This Date';
+			$block['content'] = 'Sorry No Content';
+			return $block;
+		}
+
+		// Set up the block
+		$block['subject'] = 'Remote Menu Reader';
+		$block['content'] = $block_content;
+		return $block;
+	}
+} // function remote_menu_reader_block
