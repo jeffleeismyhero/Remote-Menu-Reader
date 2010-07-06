@@ -81,7 +81,7 @@ function remote_menu_reader_menu() {
 	$items = array();
 
 	$items['admin/settings/remote_menu_reader'] = array(
-		'title' => 'Remote Menu Reader module settings',
+		'title' => 'Remote Menu Reader',
 		'description' => 'Configure the Remote Menu Reader options',
 		'page callback' => 'drupal_get_form',
 		'page arguments' => array('remote_menu_reader_admin'),
@@ -90,4 +90,11 @@ function remote_menu_reader_menu() {
 	);
 
 	return $items;
+}
+
+function remote_menu_reader_admin_validate($form, &$form_state) {
+	$service_url = $form_state['values']['remote_menu_reader_service_url'];
+	if (!valid_url($service_url, true)) {
+		form_set_error('remote_menu_reader_service_url', t('You must enter a valid, absolute URL.'));
+	}
 }
