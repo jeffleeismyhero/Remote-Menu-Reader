@@ -127,6 +127,22 @@ function remote_menu_reader_admin() {
 		'#required' => TRUE,
 	);
 
+	$form['remote_menu_reader_block_header_text'] = array(
+		'#type' => 'textarea',
+		'#title' => t('Header Text'),
+		'#default_value' => variable_get('remote_menu_reader_block_header_text', 'Remote Menu Reader'),
+		'#description' => t("The text (with HTML) to be used for the block header."),
+		'#required' => FALSE,
+	);
+
+	$form['remote_menu_reader_block_footer_text'] = array(
+		'#type' => 'textarea',
+		'#title' => t('Footer Text'),
+		'#default_value' => variable_get('remote_menu_reader_block_footer_text', 'Remote Menu Reader'),
+		'#description' => t("The text (with HTML) to be used for the block footer."),
+		'#required' => FALSE,
+	);
+
 	return system_settings_form($form);
 } // function remote_menu_reader_admin
 
@@ -151,10 +167,11 @@ function remote_menu_reader_menu() {
 * @returns HTML list of links
 */
 function _remote_menu_reader_build_menu_from_returned_data($returned_data) {
-	$result = '';
+	$result = '<ul>';
 	foreach ($returned_data as $value) {
 		$result .= '<li><a href="'.$value['link_path'].'">'.$value['link_title']."</a></li>";
 	}
+	$result .= '</ul>';
 	return $result;
 } // function _remote_menu_reader_build_menu_from_returned_data
 
