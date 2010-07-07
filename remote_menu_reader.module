@@ -39,19 +39,43 @@ function remote_menu_reader_block($op = 'list', $delta = 0, $edit = array()) {
 		return $block;
 	}
 	else if ($op == "view") {
+		ini_set('error_reporting', E_ALL);
+		ini_set('display_errors', 'stdout');
+		// Require XMLRPC Utils
+		require_once("sites/all/libraries/xmlrpc/xmlrpc.inc");
+
 		// Generate our block content
 
 		// Content variable that will be returned for display
 		$block_content = '';
 
-		$service_url = variable_get("remote_menu_reader_service_url", 'http://localhost');
+		$service_host = variable_get("remote_menu_reader_service_host", 'localhost');
+		$service_uri = variable_get("remote_menu_reader_service_uri", '/services/xmlrpc');
+		$method = variable_get("remote_menu_reader_method", 'menu.get');
+		$menu_id = new xmlrpcval(variable_get("remote_menu_reader_menu_id", 'primary_links'), "string");
+
+		// Create an XMLRPC message
+		$m = new xmlrpcmsg("$method",
+    	array($menu_id, new xmlrpcval(array(), "array"))
+    );
+
+		// Create a connection to the remote server
+		$c = new xmlrpc_client("$service_uri", "$service_host", 80);
+
+		// Send the message to the remote server and get the response
+		$r = $c->send($m);
+
+		$result = _remote_menu_reader_rpc_convert($r->value());
+  
+		// Build the menu from the result.
+		$block_content = _remote_menu_reader_build_menu_from_returned_data($result);
 
 		// Check to see if there was any content before returning
 		// the block view.
 		if ($block_content == '') {
 			// No content from remote server
 			$block['subject'] = 'Remote Menu';
-			$block['content'] = "Sorry No Content from $service_url";
+			$block['content'] = "Sorry No Content from $service_url<br />";
 			return $block;
 		}
 
@@ -65,13 +89,43 @@ function remote_menu_reader_block($op = 'list', $delta = 0, $edit = array()) {
 function remote_menu_reader_admin() {
 	$form = array();
 
-	$form['remote_menu_reader_service_url'] = array(
+	$form['remote_menu_reader_service_host'] = array(
 		'#type' => 'textfield',
-		'#title' => t('Service URL'),
-		'#default_value' => variable_get('remote_menu_reader_service_url', 'http://localhost'),
+		'#title' => t('Service Host'),
+		'#default_value' => variable_get('remote_menu_reader_service_host', 'localhost'),
 		'#size' => 60,
 		'#maxlength' => 255,
-		'#description' => t("The URL of the Service serving the menu."),
+		'#description' => t("The Hostname or IP of the Service serving the menu."),
+		'#required' => TRUE,
+	);
+
+	$form['remote_menu_reader_service_uri'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Service URI'),
+		'#default_value' => variable_get('remote_menu_reader_service_uri', '/services/xmlrpc'),
+		'#size' => 60,
+		'#maxlength' => 255,
+		'#description' => t("The URI of the Service serving the menu."),
+		'#required' => TRUE,
+	);
+
+	$form['remote_menu_reader_method'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Method'),
+		'#default_value' => variable_get('remote_menu_reader_method', 'menu.get'),
+		'#size' => 60,
+		'#maxlength' => 255,
+		'#description' => t("The Services method to call."),
+		'#required' => TRUE,
+	);
+
+	$form['remote_menu_reader_menu_id'] = array(
+		'#type' => 'textfield',
+		'#title' => t('Menu ID'),
+		'#default_value' => variable_get('remote_menu_reader_menu_id', 'primary-links'),
+		'#size' => 60,
+		'#maxlength' => 255,
+		'#description' => t("The Menu ID of the menu you would like to retrieve."),
 		'#required' => TRUE,
 	);
 
@@ -79,7 +133,6 @@ function remote_menu_reader_admin() {
 }
 
 function remote_menu_reader_menu() {
-
 	$items = array();
 
 	$items['admin/settings/remote_menu_reader'] = array(
@@ -94,9 +147,40 @@ function remote_menu_reader_menu() {
 	return $items;
 }
 
-function remote_menu_reader_admin_validate($form, &$form_state) {
-	$service_url = $form_state['values']['remote_menu_reader_service_url'];
-	if (!valid_url($service_url, true)) {
-		form_set_error('remote_menu_reader_service_url', t('You must enter a valid, absolute URL.'));
+function _remote_menu_reader_build_menu_from_returned_data($returned_data) {
+	$result = '';
+	foreach ($returned_data as $value) {
+		$result .= '<li><a href="'.$value['link_path'].'">'.$value['link_title']."</a></li>";
 	}
+	return $result;
+}
+
+/**
+* Turn xmlrpcval back into PHP-native, recursively
+*/
+function _remote_menu_reader_rpc_convert($x) {
+  $keys = array_keys($x->me);
+  $val = &$x->me[$keys[0]];
+
+  switch($x->mytype) {
+    // Scalar
+    case 1:
+      return $val;
+    // Array
+    case 2:
+      $ret = array();
+      foreach($val as $v) {
+        // Don't preserve keys
+        $ret[] = _remote_menu_reader_rpc_convert($v);
+      }
+      return $ret;
+    // Struct
+    case 3:
+      $ret = array();
+      foreach($val as $k => $v) {
+        // Preserve keys
+        $ret[$k] = _remote_menu_reader_rpc_convert($v);
+      }
+      return $ret;
+  }
 }
