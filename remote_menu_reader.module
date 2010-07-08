@@ -181,28 +181,28 @@ function _remote_menu_reader_build_menu_from_returned_data($returned_data) {
 * @returns PHP array
 */
 function _remote_menu_reader_rpc_convert($x) {
-  $keys = array_keys($x->me);
-  $val = &$x->me[$keys[0]];
+	$keys = array_keys($x->me);
+	$val = &$x->me[$keys[0]];
 
-  switch($x->mytype) {
-    // Scalar
-    case 1:
-      return $val;
-    // Array
-    case 2:
-      $ret = array();
-      foreach($val as $v) {
-        // Don't preserve keys
-        $ret[] = _remote_menu_reader_rpc_convert($v);
-      }
-      return $ret;
-    // Struct
-    case 3:
-      $ret = array();
-      foreach($val as $k => $v) {
-        // Preserve keys
-        $ret[$k] = _remote_menu_reader_rpc_convert($v);
-      }
-      return $ret;
-  }
+	switch($x->mytype) {
+		// Scalar
+		case 1:
+			return $val;
+		// Array
+		case 2:
+			$ret = array();
+			foreach($val as $v) {
+				// Don't preserve keys
+				$ret[] = _remote_menu_reader_rpc_convert($v);
+			}
+			return $ret;
+		// Struct
+		case 3:
+			$ret = array();
+			foreach($val as $k => $v) {
+				// Preserve keys
+				$ret[$k] = _remote_menu_reader_rpc_convert($v);
+			}
+			return $ret;
+	}
 } // function _remote_menu_reader_rpc_convert
