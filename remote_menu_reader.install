@@ -5,43 +5,6 @@
  * @file Installation file for remote_menu_reader module
 **/
 
-function remote_menu_reader_schema() {
-	$schema['remote_menu_reader'] = array(
-		'description' => t('The base table for remote_menu_reader.'),
-		'fields' => array(
-			'rmbid' => array(
-				'description' => t('The primary identifier for a remote_menu_reader.'),
-				'type' => 'serial',
-				'unsigned' => TRUE,
-				'not null' => TRUE
-			),
-			'header_text' => array(
-				'description' => t('The header (HTML allowed) for a remote_menu_reader block.'),
-				'type' => 'text',
-				'size' => 'normal',
-				'not null' => FALSE
-			),
-			'footer_text' => array(
-				'description' => t('The footer (HTML allowed) for a remote_menu_reader block.'),
-				'type' => 'text',
-				'size' => 'normal',
-				'not null' => FALSE
-			),
-		),
-		'indexes' => array(
-			'header_text' => array('header_text'),
-			'footer_text' => array('footer_text'),
-		),
-		'primary key' => array('rmbid'),
-	);
-	return $schema;
-}
-
-function remote_menu_reader_install() {
-	// Create module tables.
-	drupal_install_schema('remote_menu_reader');
-}
-
 /**
  * Implementation of hook_uninstall().
  * Uses the variables table to store module settings. 
@@ -50,6 +13,4 @@ function remote_menu_reader_install() {
 function remote_menu_reader_uninstall() {
 	db_query("DELETE FROM {variable} WHERE name LIKE 'remote_menu_reader_%'");
 	cache_clear_all('variables', 'cache');
-	// Drop module tables.
-	drupal_uninstall_schema('remote_menu_reader');
 }
