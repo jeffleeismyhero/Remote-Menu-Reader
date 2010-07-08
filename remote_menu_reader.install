@@ -11,6 +11,6 @@
  * This function deletes them.
  */
 function remote_menu_reader_uninstall() {
-	db_query("DELETE FROM {variable} WHERE name LIKE 'remote_menu_reader_%'");
-	cache_clear_all('variables', 'cache');
+  db_query("DELETE FROM {variable} WHERE name LIKE 'remote_menu_reader_%'");
+  cache_clear_all('variables', 'cache');
 }

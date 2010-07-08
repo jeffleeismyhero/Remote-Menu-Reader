@@ -2,218 +2,218 @@
 // $Id$
 
 /**
-* Display help and module information
-* @param path which path of the site we're displaying help
-* @param arg array that holds the current path as would be returned from arg() function
-* @return help text for the path
-*/
+ * Display help and module information
+ * @param path which path of the site we're displaying help
+ * @param arg array that holds the current path as would be returned from arg() function
+ * @return help text for the path
+ */
 function remote_menu_reader_help($path, $arg) {
-	$output = '';  // declare your output variable
-	switch ($path) {
-		case "admin/help#remote_menu_reader":
-			$output = '<p>'.  t("Retrieves a menu from a remote site serving the menu through the Services module") .'</p>';
-			break;
-	}
-	return $output;
+  $output = '';  // declare your output variable
+  switch ($path) {
+    case "admin/help#remote_menu_reader":
+      $output = '<p>'.  t("Retrieves a menu from a remote site serving the menu through the Services module") .'</p>';
+      break;
+  }
+  return $output;
 } // function remote_menu_reader_help
 
 /**
-* Valid permissions for this module
-* @return array An array of valid permissions for the remote_menu_reader module
-*/
+ * Valid permissions for this module
+ * @return array An array of valid permissions for the remote_menu_reader module
+ */
 function remote_menu_reader_perm() {
-	  return array('access remote_menu_reader content', 'administer remote_menu_reader');
+    return array('access remote_menu_reader content', 'administer remote_menu_reader');
 } // function remote_menu_reader_perm()
 
 /**
-* Generate HTML for the remote_menu_reader block
-* @param op the operation from the URL
-* @param delta offset
-* @returns block HTML
-*/
+ * Generate HTML for the remote_menu_reader block
+ * @param op the operation from the URL
+ * @param delta offset
+ * @returns block HTML
+ */
 function remote_menu_reader_block($op = 'list', $delta = 0, $edit = array()) {
-	switch ($op) {
-		case "list":
-			// Generate listing of blocks from this module, for the admin/block page
-			$block = array();
-			$block[0]["info"] = t('Remote Menu Reader');
-			return $block;
-			break;
+  switch ($op) {
+    case "list":
+      // Generate listing of blocks from this module, for the admin/block page
+      $block = array();
+      $block[0]["info"] = t('Remote Menu Reader');
+      return $block;
+      break;
 
-		case "view":
-			ini_set('error_reporting', E_ALL);
-			ini_set('display_errors', 'stdout');
-			// Require XMLRPC Utils
-			require_once("sites/all/libraries/xmlrpc/xmlrpc.inc");
+    case "view":
+      ini_set('error_reporting', E_ALL);
+      ini_set('display_errors', 'stdout');
+      // Require XMLRPC Utils
+      require_once("sites/all/libraries/xmlrpc/xmlrpc.inc");
 
-			// Content variable that will be returned for display
-			$block_content = '';
+      // Content variable that will be returned for display
+      $block_content = '';
 
-			$service_host = variable_get("remote_menu_reader_service_host", 'localhost');
-			$service_uri = variable_get("remote_menu_reader_service_uri", '/services/xmlrpc');
-			$method = variable_get("remote_menu_reader_method", 'menu.get');
-			$menu_id = new xmlrpcval(variable_get("remote_menu_reader_menu_id", 'primary_links'), "string");
-			$header_text = '<div class="remote-menu-header-block-header">' . variable_get("remote_menu_reader_block_header_text", '') . '</div>';
-			$footer_text = '<div class="remote-menu-reader-block-footer">' . variable_get("remote_menu_reader_block_footer_text", '') . '</div>';
+      $service_host = variable_get("remote_menu_reader_service_host", 'localhost');
+      $service_uri = variable_get("remote_menu_reader_service_uri", '/services/xmlrpc');
+      $method = variable_get("remote_menu_reader_method", 'menu.get');
+      $menu_id = new xmlrpcval(variable_get("remote_menu_reader_menu_id", 'primary_links'), "string");
+      $header_text = '<div class="remote-menu-header-block-header">' . variable_get("remote_menu_reader_block_header_text", '') . '</div>';
+      $footer_text = '<div class="remote-menu-reader-block-footer">' . variable_get("remote_menu_reader_block_footer_text", '') . '</div>';
 
-			// Create an XMLRPC message
-			$m = new xmlrpcmsg("$method", array($menu_id, new xmlrpcval(array(), "array")));
+      // Create an XMLRPC message
+      $m = new xmlrpcmsg("$method", array($menu_id, new xmlrpcval(array(), "array")));
 
-			// Create a connection to the remote server
-			$c = new xmlrpc_client("$service_uri", "$service_host", 80);
+      // Create a connection to the remote server
+      $c = new xmlrpc_client("$service_uri", "$service_host", 80);
 
-			// Send the message to the remote server and get the response
-			$r = $c->send($m);
+      // Send the message to the remote server and get the response
+      $r = $c->send($m);
 
-			$result = _remote_menu_reader_rpc_convert($r->value());
+      $result = _remote_menu_reader_rpc_convert($r->value());
 
-			// Add the block header text
-			$block_content .= $header_text;
-			// Build the menu from the result
-			$block_content .= _remote_menu_reader_build_menu_from_returned_data($result);
-			// Add the block footer text
-			$block_content .= $footer_text;
+      // Add the block header text
+      $block_content .= $header_text;
+      // Build the menu from the result
+      $block_content .= _remote_menu_reader_build_menu_from_returned_data($result);
+      // Add the block footer text
+      $block_content .= $footer_text;
 
-			// Check to see if there was any content before returning the block view
-			if ($block_content == '') {
-				// No content from remote server
-				$block['subject'] = 'Remote Menu Reader';
-				$block['content'] = "Sorry No Content from $service_url<br />";
-				return $block;
-			}
+      // Check to see if there was any content before returning the block view
+      if ($block_content == '') {
+        // No content from remote server
+        $block['subject'] = 'Remote Menu Reader';
+        $block['content'] = "Sorry No Content from $service_url<br />";
+        return $block;
+      }
 
-			// Set up the block
-			$block['subject'] = 'Remote Menu Reader';
-			$block['content'] = $block_content;
-			return $block;
-			break;
-	}
+      // Set up the block
+      $block['subject'] = 'Remote Menu Reader';
+      $block['content'] = $block_content;
+      return $block;
+      break;
+  }
 } // function remote_menu_reader_block
 
 function remote_menu_reader_admin() {
-	$form = array();
+  $form = array();
 
-	$form['remote_menu_reader_service_host'] = array(
-		'#type' => 'textfield',
-		'#title' => t('Service Host'),
-		'#default_value' => variable_get('remote_menu_reader_service_host', 'localhost'),
-		'#size' => 60,
-		'#maxlength' => 255,
-		'#description' => t("The Hostname or IP of the Service serving the menu."),
-		'#required' => TRUE,
-	);
+  $form['remote_menu_reader_service_host'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Service Host'),
+    '#default_value' => variable_get('remote_menu_reader_service_host', 'localhost'),
+    '#size' => 60,
+    '#maxlength' => 255,
+    '#description' => t("The Hostname or IP of the Service serving the menu."),
+    '#required' => TRUE,
+  );
 
-	$form['remote_menu_reader_service_uri'] = array(
-		'#type' => 'textfield',
-		'#title' => t('Service URI'),
-		'#default_value' => variable_get('remote_menu_reader_service_uri', '/services/xmlrpc'),
-		'#size' => 60,
-		'#maxlength' => 255,
-		'#description' => t("The URI of the Service serving the menu."),
-		'#required' => TRUE,
-	);
+  $form['remote_menu_reader_service_uri'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Service URI'),
+    '#default_value' => variable_get('remote_menu_reader_service_uri', '/services/xmlrpc'),
+    '#size' => 60,
+    '#maxlength' => 255,
+    '#description' => t("The URI of the Service serving the menu."),
+    '#required' => TRUE,
+  );
 
-	$form['remote_menu_reader_method'] = array(
-		'#type' => 'textfield',
-		'#title' => t('Method'),
-		'#default_value' => variable_get('remote_menu_reader_method', 'menu.get'),
-		'#size' => 60,
-		'#maxlength' => 255,
-		'#description' => t("The Services method to call."),
-		'#required' => TRUE,
-	);
+  $form['remote_menu_reader_method'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Method'),
+    '#default_value' => variable_get('remote_menu_reader_method', 'menu.get'),
+    '#size' => 60,
+    '#maxlength' => 255,
+    '#description' => t("The Services method to call."),
+    '#required' => TRUE,
+  );
 
-	$form['remote_menu_reader_menu_id'] = array(
-		'#type' => 'textfield',
-		'#title' => t('Menu ID'),
-		'#default_value' => variable_get('remote_menu_reader_menu_id', 'primary-links'),
-		'#size' => 60,
-		'#maxlength' => 255,
-		'#description' => t("The Menu ID of the menu you would like to retrieve."),
-		'#required' => TRUE,
-	);
+  $form['remote_menu_reader_menu_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Menu ID'),
+    '#default_value' => variable_get('remote_menu_reader_menu_id', 'primary-links'),
+    '#size' => 60,
+    '#maxlength' => 255,
+    '#description' => t("The Menu ID of the menu you would like to retrieve."),
+    '#required' => TRUE,
+  );
 
-	$form['remote_menu_reader_block_header_text'] = array(
-		'#type' => 'textarea',
-		'#title' => t('Header Text'),
-		'#default_value' => variable_get('remote_menu_reader_block_header_text', 'Remote Menu Reader'),
-		'#description' => t("The text (with HTML) to be used for the block header."),
-		'#required' => FALSE,
-	);
+  $form['remote_menu_reader_block_header_text'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Header Text'),
+    '#default_value' => variable_get('remote_menu_reader_block_header_text', 'Remote Menu Reader'),
+    '#description' => t("The text (with HTML) to be used for the block header."),
+    '#required' => FALSE,
+  );
 
-	$form['remote_menu_reader_block_footer_text'] = array(
-		'#type' => 'textarea',
-		'#title' => t('Footer Text'),
-		'#default_value' => variable_get('remote_menu_reader_block_footer_text', 'Remote Menu Reader'),
-		'#description' => t("The text (with HTML) to be used for the block footer."),
-		'#required' => FALSE,
-	);
+  $form['remote_menu_reader_block_footer_text'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Footer Text'),
+    '#default_value' => variable_get('remote_menu_reader_block_footer_text', 'Remote Menu Reader'),
+    '#description' => t("The text (with HTML) to be used for the block footer."),
+    '#required' => FALSE,
+  );
 
-	return system_settings_form($form);
+  return system_settings_form($form);
 } // function remote_menu_reader_admin
 
 function remote_menu_reader_menu() {
-	$items = array();
+  $items = array();
 
-	$items['admin/settings/remote_menu_reader'] = array(
-		'title' => 'Remote Menu Reader',
-		'description' => 'Configure the Remote Menu Reader options',
-		'page callback' => 'drupal_get_form',
-		'page arguments' => array('remote_menu_reader_admin'),
-		'access arguments' => array('access administration pages'),
-		'type' => MENU_NORMAL_ITEM,
-	);
+  $items['admin/settings/remote_menu_reader'] = array(
+    'title' => 'Remote Menu Reader',
+    'description' => 'Configure the Remote Menu Reader options',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('remote_menu_reader_admin'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 
-	return $items;
+  return $items;
 } // function remote_menu_reader_menu
 
 /**
-* Turn the converted array into a set of links within a list.
-* @param returned_data the PHP array of menu data
-* @returns HTML list of links
-*/
+ * Turn the converted array into a set of links within a list.
+ * @param returned_data the PHP array of menu data
+ * @returns HTML list of links
+ */
 function _remote_menu_reader_build_menu_from_returned_data($returned_data) {
-	$result = '<div class="remote-menu-reader-block-menu"><ul>';
-	foreach ($returned_data as $value) {
-		$result .= '<li><a href="'.$value['link_path'].'">'.$value['link_title']."</a></li>";
-	}
-	$result .= '</ul></div>';
-	return $result;
+  $result = '<div class="remote-menu-reader-block-menu"><ul>';
+  foreach ($returned_data as $value) {
+    $result .= '<li><a href="' . $value['link_path'] . '">' . $value['link_title'] . '</a></li>';
+  }
+  $result .= '</ul></div>';
+  return $result;
 } // function _remote_menu_reader_build_menu_from_returned_data
 
 /**
-* Turn xmlrpcval back into PHP-native, recursively
-* @param x the xmlrpcval
-* @returns PHP array
-*/
+ * Turn xmlrpcval back into PHP-native, recursively
+ * @param x the xmlrpcval
+ * @returns PHP array
+ */
 function _remote_menu_reader_rpc_convert($x) {
-	$keys = array_keys($x->me);
-	$val = &$x->me[$keys[0]];
+  $keys = array_keys($x->me);
+  $val = &$x->me[$keys[0]];
 
-	switch($x->mytype) {
-		// Scalar
-		case 1:
-			return $val;
-			break;
+  switch ($x->mytype) {
+    // Scalar
+    case 1:
+      return $val;
+      break;
 
-		// Array
-		case 2:
-			$ret = array();
-			foreach($val as $v) {
-				// Don't preserve keys
-				$ret[] = _remote_menu_reader_rpc_convert($v);
-			}
-			return $ret;
-			break;
+    // Array
+    case 2:
+      $ret = array();
+      foreach ($val as $v) {
+        // Don't preserve keys
+        $ret[] = _remote_menu_reader_rpc_convert($v);
+      }
+      return $ret;
+      break;
 
-		// Struct
-		case 3:
-			$ret = array();
-			foreach($val as $k => $v) {
-				// Preserve keys
-				$ret[$k] = _remote_menu_reader_rpc_convert($v);
-			}
-			return $ret;
-			break;
-	}
+    // Struct
+    case 3:
+      $ret = array();
+      foreach ($val as $k => $v) {
+        // Preserve keys
+        $ret[$k] = _remote_menu_reader_rpc_convert($v);
+      }
+      return $ret;
+      break;
+  }
 } // function _remote_menu_reader_rpc_convert
