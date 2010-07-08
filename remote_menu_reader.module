@@ -39,6 +39,7 @@ function remote_menu_reader_block($op = 'list', $delta = 0, $edit = array()) {
 			$block[0]["info"] = t('Remote Menu Reader');
 			return $block;
 			break;
+
 		case "view":
 			ini_set('error_reporting', E_ALL);
 			ini_set('display_errors', 'stdout');
@@ -188,6 +189,8 @@ function _remote_menu_reader_rpc_convert($x) {
 		// Scalar
 		case 1:
 			return $val;
+			break;
+
 		// Array
 		case 2:
 			$ret = array();
@@ -196,6 +199,8 @@ function _remote_menu_reader_rpc_convert($x) {
 				$ret[] = _remote_menu_reader_rpc_convert($v);
 			}
 			return $ret;
+			break;
+
 		// Struct
 		case 3:
 			$ret = array();
@@ -204,5 +209,6 @@ function _remote_menu_reader_rpc_convert($x) {
 				$ret[$k] = _remote_menu_reader_rpc_convert($v);
 			}
 			return $ret;
+			break;
 	}
 } // function _remote_menu_reader_rpc_convert
