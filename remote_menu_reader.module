@@ -53,6 +53,8 @@ function remote_menu_reader_block($op = 'list', $delta = 0, $edit = array()) {
 			$service_uri = variable_get("remote_menu_reader_service_uri", '/services/xmlrpc');
 			$method = variable_get("remote_menu_reader_method", 'menu.get');
 			$menu_id = new xmlrpcval(variable_get("remote_menu_reader_menu_id", 'primary_links'), "string");
+			$header_text = '<div class="remote-menu-header-block-header">' . variable_get("remote_menu_reader_block_header_text", '') . '</div>';
+			$footer_text = '<div class="remote-menu-reader-block-footer">' . variable_get("remote_menu_reader_block_footer_text", '') . '</div>';
 
 			// Create an XMLRPC message
 			$m = new xmlrpcmsg("$method", array($menu_id, new xmlrpcval(array(), "array")));
@@ -65,14 +67,17 @@ function remote_menu_reader_block($op = 'list', $delta = 0, $edit = array()) {
 
 			$result = _remote_menu_reader_rpc_convert($r->value());
 
-			// Build the menu from the result.
-			$block_content = _remote_menu_reader_build_menu_from_returned_data($result);
+			// Add the block header text
+			$block_content .= $header_text;
+			// Build the menu from the result
+			$block_content .= _remote_menu_reader_build_menu_from_returned_data($result);
+			// Add the block footer text
+			$block_content .= $footer_text;
 
-			// Check to see if there was any content before returning
-			// the block view.
+			// Check to see if there was any content before returning the block view
 			if ($block_content == '') {
 				// No content from remote server
-				$block['subject'] = 'Remote Menu';
+				$block['subject'] = 'Remote Menu Reader';
 				$block['content'] = "Sorry No Content from $service_url<br />";
 				return $block;
 			}
@@ -168,11 +173,11 @@ function remote_menu_reader_menu() {
 * @returns HTML list of links
 */
 function _remote_menu_reader_build_menu_from_returned_data($returned_data) {
-	$result = '<ul>';
+	$result = '<div class="remote-menu-reader-block-menu"><ul>';
 	foreach ($returned_data as $value) {
 		$result .= '<li><a href="'.$value['link_path'].'">'.$value['link_title']."</a></li>";
 	}
-	$result .= '</ul>';
+	$result .= '</ul></div>';
 	return $result;
 } // function _remote_menu_reader_build_menu_from_returned_data
 
